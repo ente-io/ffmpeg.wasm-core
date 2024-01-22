@@ -4,7 +4,7 @@ set -eo pipefail
 source $(dirname $0)/var.sh
 
 if [[ "$FFMPEG_ST" != "yes" ]]; then
-  mkdir -p wasm/packages/core/dist
+  mkdir -p wasm/packages/core.png-to-mp4/dist
   EXPORTED_FUNCTIONS="[_main, __emscripten_proxy_main]"
   EXTRA_FLAGS=(
     -pthread
@@ -13,20 +13,20 @@ if [[ "$FFMPEG_ST" != "yes" ]]; then
 		-s INITIAL_MEMORY=1073741824                  # 1GB
   )
 else
-  DISTDIR="wasm/packages/core-st/dist"
+  DISTDIR="wasm/packages/core-st.png-to-mp4/dist"
   EXPORTED_FUNCTIONS="[_main]"
   EXTRA_FLAGS=(
 		-s INITIAL_MEMORY=33554432                   # 32MB
-		-s MAXIMUM_MEMORY=4294967296                  # 4GB
+		-s MAXIMUM_MEMORY=1073741824                  # 1GB
 		-s ALLOW_MEMORY_GROWTH=1
   )
 fi
 mkdir -p "$DISTDIR"
 FLAGS=(
   -I. -I./fftools -I$BUILD_DIR/include
-  -Llibavcodec -Llibavdevice -Llibavfilter -Llibavformat -Llibavresample -Llibavutil -Lharfbuzz -Llibass -Lfribidi -Llibpostproc -Llibswscale -Llibswresample -L$BUILD_DIR/lib
+  -Llibavcodec -Llibavfilter -Llibavformat -Llibavutil -Llibswscale -Llibswresample -L$BUILD_DIR/lib
   -Wno-deprecated-declarations -Wno-pointer-sign -Wno-implicit-int-float-conversion -Wno-switch -Wno-parentheses -Qunused-arguments
-  -lavdevice -lavfilter -lavformat -lavcodec -lswresample -lswscale -lavutil -lpostproc -lm -lharfbuzz -lfribidi -lass -lx264 -lx265 -lvpx -lwavpack -lmp3lame -lfdk-aac -lvorbis -lvorbisenc -lvorbisfile -logg -ltheora -ltheoraenc -ltheoradec -lz -lfreetype -lopus -lwebp -lwebpmux -lsharpyuv
+  -lavfilter -lavformat -lavcodec -lswresample -lswscale -lavutil -lm -lx264 -lz
   fftools/ffmpeg_opt.c fftools/ffmpeg_filter.c fftools/ffmpeg_hw.c fftools/cmdutils.c fftools/ffmpeg.c
   -s USE_SDL=2                                  # use SDL2
   -s INVOKE_RUN=0                               # not to run the main() in the beginning
@@ -34,7 +34,8 @@ FLAGS=(
   -s MODULARIZE=1                               # use modularized version to be more flexible
   -s EXPORT_NAME="createFFmpegCore"             # assign export name for browser
   -s EXPORTED_FUNCTIONS="$EXPORTED_FUNCTIONS"  # export main and proxy_main funcs
-  -s EXPORTED_RUNTIME_METHODS="[FS, cwrap, ccall, setValue, writeAsciiToMemory, lengthBytesUTF8, stringToUTF8, UTF8ToString]"   # export preamble funcs
+  -s EXPORTED_RUNTIME_METHODS="[FS, cwrap, ccall, setValue, writeAsciiToMemory]"   # export preamble funcs
+  -s INITIAL_MEMORY=1073741824                  # 1073741824 bytes = 1 GB
   --post-js wasm/src/post.js
   --pre-js wasm/src/pre.js
   $OPTIM_FLAGS
