@@ -17,7 +17,7 @@ else
   EXPORTED_FUNCTIONS="[_main]"
   EXTRA_FLAGS=(
 		-s INITIAL_MEMORY=33554432                   # 32MB
-		-s MAXIMUM_MEMORY=1073741824                  # 1GB
+		-s MAXIMUM_MEMORY=4294967296                  # 4GB
 		-s ALLOW_MEMORY_GROWTH=1
   )
 fi
